@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional
 
 app = FastAPI(title="Global Signal Server")
 
-# Signal modeli: message + sender (@Kaktus_bol12)
+# Signal modeli
 class Signal(BaseModel):
     message: str
-    sender: str
+    sender: Optional[str] = None  # ixtiyoriy
 
 @app.get("/")
 async def root():
@@ -14,10 +15,13 @@ async def root():
 
 @app.post("/signal")
 async def send_signal(signal: Signal):
-    # Logda kim yuborganini ko‘rsatadi
-    print(f"New signal received from {signal.sender}: {signal.message}")
+    # Agar sender yuborilmasa avtomatik qo‘shiladi
+    sender_name = signal.sender if signal.sender else "@Kaktus_bol12"
+
+    print(f"🌍 New signal from {sender_name}: {signal.message}")
+
     return {
         "status": "Signal received",
         "message": signal.message,
-        "sender": signal.sender
+        "sender": sender_name
     }
