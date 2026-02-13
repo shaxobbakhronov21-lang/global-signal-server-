@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Global Signal Billboard</title>
+    <style>
+        body { font-family: Arial; background: black; color: lime; text-align: center; }
+        #signal { font-size: 3em; margin-top: 20vh; }
+    </style>
+</head>
+<body>
+    <h1>Jonli Signal Pesh Taxta</h1>
+    <div id="signal">Yuklanmoqda...</div>
+
+    <script>
+        async function fetchSignal() {
+            try {
+                let res = await fetch('https://global-signal-server-3.onrender.com/signals');
+                let data = await res.json();
+                if(data.length > 0){
+                    let last = data[data.length - 1];
+                    document.getElementById('signal').innerText = last.sender + ": " + last.message;
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('signal').innerText = "Xatolik: server bilan bog‘lanilmadi";
+            }
+        }
+
+        setInterval(fetchSignal, 5000);
+        fetchSignal();
+    </script>
+</body>
+</html>
