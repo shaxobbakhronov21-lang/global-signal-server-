@@ -3,10 +3,10 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Global Signal Server")
 
-# Signal modeli: xabar + yuboruvchi
+# Signal modeli: message + sender (@Kaktus_bol12)
 class Signal(BaseModel):
     message: str
-    sender: str  # @Kaktus_bol12
+    sender: str
 
 @app.get("/")
 async def root():
@@ -14,7 +14,7 @@ async def root():
 
 @app.post("/signal")
 async def send_signal(signal: Signal):
-    # Signal qabul qilindi va kim yuborganini ko‘rsatadi
+    # Logda kim yuborganini ko‘rsatadi
     print(f"New signal received from {signal.sender}: {signal.message}")
     return {
         "status": "Signal received",
