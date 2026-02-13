@@ -1,27 +1,33 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import Optional
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from datetime import datetime
+import json
+import os
 
-app = FastAPI(title="Global Signal Server")
+app = FastAPI()
+LOG_FILE = "signals_log.json"
 
-# Signal modeli
-class Signal(BaseModel):
-    message: str
-    sender: Optional[str] = None  # ixtiyoriy
-
-@app.get("/")
-async def root():
-    return {"status": "Server is running"}
+# Agar log fayl yo'q bo'lsa, uni yarating
+if not os.path.exists(LOG_FILE):
+    with open(LOG_FILE, "w") as f:
+        json.dump([], f)
 
 @app.post("/signal")
-async def send_signal(signal: Signal):
-    # Agar sender yuborilmasa avtomatik qo‘shiladi
-    sender_name = signal.sender if signal.sender else "@Kaktus_bol12"
+async def receive_signal(request: Request):
+    data = await request.json()
+    data["timestamp"] = datetime.utcnow().isoformat()
 
-    print(f"🌍 New signal from {sender_name}: {signal.message}")
+    with open(LOG_FILE, "r+") as f:
+        logs = json.load(f)
+        logs.append(data)
+        f.seek(0)
+        json.dump(logs, f, indent=4)
 
-    return {
-        "status": "Signal received",
-        "message": signal.message,
-        "sender": sender_name
-    }
+    print("Signal qabul qilindi:", data)
+    return JSONResponse({"status": "ok", "received": data})
+
+@app.get("/signals")
+async def get_signals():
+    with open(LOG_FILE, "r") as f:
+        logs = json.load(f)
+    return JSONResponse(logs)
